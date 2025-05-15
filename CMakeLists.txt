@@ -41,6 +41,7 @@ set(SOURCES
     driver/st7789.c
     lib/renderer.c
     lib/tiles.c
+    lib/color.c
 )
 
 # Header paths

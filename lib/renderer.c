@@ -1,6 +1,13 @@
 #include "renderer.h"
 #include "src/config.h"
 #include <driver_select.h>
+#include <stdint.h>
+
+/**
+ * any value in style 0x00** performs the same, as soon as you change the higher
+ * bits, you lose ~1.8% performance on drawing pixels
+ */
+#define SPRITE_MASK 0x00ff
 
 #ifndef X_OFFSET
 #define X_OFFSET 0
@@ -21,7 +28,6 @@ void renderer_init(void) { display_init(); }
 void renderer_draw_pixel(int x, int y, uint16_t color) {
   if (x < 0 || x >= WRAPPED_WIDTH || y < 0 || y >= WRAPPED_HEIGHT)
     return;
-
   display_set_area(x + X_OFFSET, y + Y_OFFSET, x + X_OFFSET, y + Y_OFFSET);
   display_write_buffer(&color, 1);
 }
@@ -61,12 +67,11 @@ void renderer_fill_rect(int x, int y, int w, int h, uint16_t color) {
   display_fill_color(color, clipped_width * clipped_height);
 }
 
-void renderer_blit(int dst_x, int dst_y, const uint16_t *sprite, int width,
-                   int height) {
+void renderer_blit(int dst_x, int dst_y, const uint16_t *sprite, int w, int h) {
   int x0 = dst_x + X_OFFSET;
   int y0 = dst_y + Y_OFFSET;
-  int x1 = x0 + width - 1;
-  int y1 = y0 + height - 1;
+  int x1 = x0 + w - 1;
+  int y1 = y0 + h - 1;
 
   int x_min = X_OFFSET;
   int y_min = Y_OFFSET;
@@ -80,18 +85,18 @@ void renderer_blit(int dst_x, int dst_y, const uint16_t *sprite, int width,
   // Fully inside viewport
   if (x0 >= x_min && y0 >= y_min && x1 <= x_max && y1 <= y_max) {
     display_set_area(x0, y0, x1, y1);
-    display_write_buffer(sprite, width * height);
+    display_write_buffer(sprite, w * h);
     return;
   }
 
   // Clipped draw, line by line
-  for (int row = 0; row < height; ++row) {
+  for (int row = 0; row < h; ++row) {
     int screen_y = dst_y + row + Y_OFFSET;
     if (screen_y < y_min || screen_y > y_max)
       continue;
 
     int start_x = dst_x + X_OFFSET;
-    int end_x = start_x + width - 1;
+    int end_x = start_x + w - 1;
 
     int clip_start = (start_x < x_min) ? x_min : start_x;
     int clip_end = (end_x > x_max) ? x_max : end_x;
@@ -100,8 +105,20 @@ void renderer_blit(int dst_x, int dst_y, const uint16_t *sprite, int width,
     if (visible_width <= 0)
       continue;
 
-    int sprite_offset = row * width + (clip_start - start_x);
+    int sprite_offset = row * w + (clip_start - start_x);
     display_set_area(clip_start, screen_y, clip_end, screen_y);
     display_write_buffer(&sprite[sprite_offset], visible_width);
+  }
+}
+
+void renderer_draw_sprite(int dst_x, int dst_y, const uint16_t *sprite, int w,
+                          int h) {
+  for (int y = 0; y < h; y++) {
+    for (int x = 0; x < w; x++) {
+      uint16_t color = sprite[y * w + x];
+      if (color != SPRITE_MASK) {
+        renderer_draw_pixel(dst_x + x, dst_y + y, color);
+      }
+    }
   }
 }
