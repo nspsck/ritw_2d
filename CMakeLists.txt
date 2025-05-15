@@ -70,6 +70,8 @@ target_link_libraries(ritw_2d
         pico_stdlib
         hardware_spi
         hardware_clocks
+        hardware_vreg
+        hardware_adc
 )
 
 # Build output
