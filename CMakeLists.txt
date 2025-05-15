@@ -40,8 +40,9 @@ set(SOURCES
     src/ritw_2d.c
     driver/st7789.c
     lib/renderer.c
-    lib/tiles.c
+    lib/tilemap.c
     lib/color.c
+    lib/sprite.c
 )
 
 # Header paths

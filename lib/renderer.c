@@ -1,7 +1,7 @@
 #include "renderer.h"
+/* config.h has to be imported earlier than driver_select.h */
 #include "src/config.h"
 #include <driver_select.h>
-#include <stdint.h>
 
 /**
  * any value in style 0x00** performs the same, as soon as you change the higher
@@ -67,7 +67,8 @@ void renderer_fill_rect(int x, int y, int w, int h, uint16_t color) {
   display_fill_color(color, clipped_width * clipped_height);
 }
 
-void renderer_blit(int dst_x, int dst_y, const uint16_t *sprite, int w, int h) {
+void renderer_blit(int dst_x, int dst_y, const uint16_t *rect_obj, int w,
+                   int h) {
   int x0 = dst_x + X_OFFSET;
   int y0 = dst_y + Y_OFFSET;
   int x1 = x0 + w - 1;
@@ -85,7 +86,7 @@ void renderer_blit(int dst_x, int dst_y, const uint16_t *sprite, int w, int h) {
   // Fully inside viewport
   if (x0 >= x_min && y0 >= y_min && x1 <= x_max && y1 <= y_max) {
     display_set_area(x0, y0, x1, y1);
-    display_write_buffer(sprite, w * h);
+    display_write_buffer(rect_obj, w * h);
     return;
   }
 
@@ -105,20 +106,109 @@ void renderer_blit(int dst_x, int dst_y, const uint16_t *sprite, int w, int h) {
     if (visible_width <= 0)
       continue;
 
-    int sprite_offset = row * w + (clip_start - start_x);
+    int rect_offset = row * w + (clip_start - start_x);
     display_set_area(clip_start, screen_y, clip_end, screen_y);
-    display_write_buffer(&sprite[sprite_offset], visible_width);
+    display_write_buffer(&rect_obj[rect_offset], visible_width);
   }
 }
 
-void renderer_draw_sprite(int dst_x, int dst_y, const uint16_t *sprite, int w,
-                          int h) {
+void renderer_draw_sprite(int dst_x, int dst_y, const Sprite *sprite,
+                          uint8_t step) {
+  const uint16_t *sp = sprite_get_frame(sprite, step);
+  int w = sprite->width;
+  int h = sprite->height;
   for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {
-      uint16_t color = sprite[y * w + x];
+      uint16_t color = sp[y * w + x];
       if (color != SPRITE_MASK) {
         renderer_draw_pixel(dst_x + x, dst_y + y, color);
       }
     }
   }
+}
+
+void renderer_queue_tilemap(const TileMap *tilemap, Tile tiles[],
+                            enum TileSize tile_size) {
+  if (render_count >= MAX_RENDER_JOBS)
+    return;
+  if (tile_size == TILE8x8) {
+    render_list[render_count++] =
+        (RenderJob){.type = RENDER_TILEMAP, .tilemap8x8 = {tilemap, tiles}};
+    return;
+  }
+  if (tile_size == TILE16x16) {
+    render_list[render_count++] =
+        (RenderJob){.type = RENDER_TILEMAP, .tilemap16x16 = {tilemap, tiles}};
+    return;
+  }
+}
+
+void renderer_queue_sprite(int x, int y, const Sprite *sprite, uint8_t step) {
+  if (render_count >= MAX_RENDER_JOBS)
+    return;
+  render_list[render_count++] =
+      (RenderJob){.type = RENDER_SPRITE, .sprite = {x, y, sprite, step}};
+}
+
+void renderer_queue_rect(int x, int y, int w, int h, uint16_t color) {
+  if (render_count >= MAX_RENDER_JOBS)
+    return;
+  render_list[render_count++] =
+      (RenderJob){.type = RENDER_RECT, .rect = {x, y, w, h, color}};
+}
+
+void renderer_queue_pixel(int x, int y, uint16_t color) {
+  if (render_count >= MAX_RENDER_JOBS)
+    return;
+  render_list[render_count++] =
+      (RenderJob){.type = RENDER_PIXEL, .pixel = {x, y, color}};
+}
+
+void renderer_process_render_list(void) {
+  for (size_t i = 0; i < render_count; i++) {
+    RenderJob *job = &render_list[i];
+    switch (job->type) {
+    case RENDER_TILEMAP:
+      break;
+    case RENDER_SPRITE:
+      renderer_draw_sprite(job->sprite.x, job->sprite.y, job->sprite.sprite,
+                           job->sprite.step);
+      break;
+    case RENDER_RECT:
+      renderer_fill_rect(job->rect.x, job->rect.y, job->rect.w, job->rect.h,
+                         job->rect.color);
+      break;
+    case RENDER_PIXEL:
+      renderer_draw_pixel(job->pixel.x, job->pixel.y, job->pixel.color);
+      break;
+    }
+  }
+  render_count = 0;
+}
+
+void render_list_remove_at(size_t index) {
+  if (index >= render_count)
+    return;
+  for (size_t i = index; i < render_count - 1; i++) {
+    render_list[i] = render_list[i + 1];
+  }
+  render_count--;
+}
+
+bool render_list_remove_sprite(const Sprite *sprite) {
+  for (size_t i = 0; i < render_count; i++) {
+    if (render_list[i].type == RENDER_SPRITE &&
+        render_list[i].sprite.sprite == sprite) {
+      render_list_remove_at(i);
+      return true;
+    }
+  }
+  return false;
+}
+
+bool render_list_add(RenderJob job) {
+  if (render_count >= MAX_RENDER_JOBS)
+    return false;
+  render_list[render_count++] = job;
+  return true;
 }
