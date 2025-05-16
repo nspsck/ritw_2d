@@ -7,7 +7,6 @@
 #include <hardware/gpio.h>
 #include <hardware/pll.h>
 #include <hardware/spi.h>
-#include <hardware/structs/clocks.h>
 #include <hardware/timer.h>
 #include <hardware/vreg.h>
 #include <pico/time.h>
@@ -36,15 +35,18 @@ const uint16_t bnw[16 * 16] = {
 const Sprite sprite = {
     .height = 16, .width = 16, .steps = 1, .sprite_array = bnw};
 
+#define SYS_CLOCK_MHZ 400
+#define PERI_CLOCK_MHZ 200
+
 int main() {
 
   stdio_init_all();
   vreg_set_voltage(VREG_VOLTAGE_1_30);
   // Set sysclock to 250MHz and periclock to 125MHz
-  set_sys_clock_hz(400 * MHZ, false);
+  set_sys_clock_hz(SYS_CLOCK_MHZ * MHZ, false);
   clock_configure(clk_peri, CLOCKS_CLK_SYS_CTRL_SRC_VALUE_CLKSRC_CLK_SYS_AUX,
-                  CLOCKS_CLK_SYS_CTRL_AUXSRC_VALUE_CLKSRC_PLL_SYS, 400 * MHZ,
-                  200 * MHZ);
+                  CLOCKS_CLK_SYS_CTRL_AUXSRC_VALUE_CLKSRC_PLL_SYS,
+                  SYS_CLOCK_MHZ * MHZ, PERI_CLOCK_MHZ * MHZ);
 
   // Turn on display
   gpio_init(PIN_TFT_VCC);
@@ -53,8 +55,12 @@ int main() {
 
   renderer_init();
 
-  gpio_init(25);
-  gpio_set_dir(25, GPIO_OUT);
+  spi_init(SPI_PORT, 62.5 * MHZ);
+
+  adc_init();
+  adc_set_temp_sensor_enabled(true);
+  adc_select_input(4);
+  uint16_t result = adc_read();
 
   uint16_t fps = 0;
   uint32_t time_ms = us_to_ms(time_us_64());
@@ -68,22 +74,22 @@ int main() {
   uint16_t color = rgb_to_swapped_565(250, 250, 0);
   renderer_clear(color);
 
-  bool toggle = true;
-
   while (true) {
     if ((us_to_ms(time_us_64()) - time_ms) >= 1000) {
       printf("FPS: %d\n", fps);
       printf("Core Frequency: %d MHz\n", clock_get_hz(clk_sys) / MHZ);
-      printf("SPI baudrate: %d KHz\n", spi_get_baudrate(SPI_PORT) / KHZ);
+      printf("SPI baudrate: %d MHz\n", spi_get_baudrate(SPI_PORT) / MHZ);
       printf("Peri Frequency: %d MHz\n", clock_get_hz(clk_peri) / MHZ);
       printf("flashclk div: %d\n", PICO_FLASH_SPI_CLKDIV);
-      gpio_put(25, toggle);
-      toggle = !toggle;
+      printf("Core Temp: %f Celsius\n",
+             27 - (result * 3.3f / (1 << 12) - 0.706) / 0.001721);
+      result = adc_read();
       fps = 0;
       time_ms = us_to_ms(time_us_64());
     }
 
     renderer_draw_sprite(dst_x, dst_y, &sprite, 10);
+    // sleep_ms(5);
     renderer_fill_rect(dst_x, dst_y, sprite.width, sprite.height, color);
 
     if (dst_x >= 128 || dst_y >= 160) {
