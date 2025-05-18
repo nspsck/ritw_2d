@@ -1,4 +1,5 @@
 #include "config.h"
+#include "hardware/structs/ssi.h"
 #include "pico/stdlib.h"
 #include <color.h>
 #include <hardware/adc.h>
@@ -7,6 +8,7 @@
 #include <hardware/gpio.h>
 #include <hardware/pll.h>
 #include <hardware/spi.h>
+#include <hardware/structs/clocks.h>
 #include <hardware/timer.h>
 #include <hardware/vreg.h>
 #include <pico/time.h>
@@ -15,6 +17,20 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+
+static void __no_inline_not_in_flash_func(set_flash_div)(int freq) {
+  const int max_freq = 133 * MHZ;
+  int div = (freq + max_freq - 1) / max_freq;
+  if (div % 2 == 1) {
+    div += 1;
+  }
+  while (ssi_hw->sr & SSI_SR_BUSY_BITS) {
+    ;
+  }
+  hw_clear_bits(&ssi_hw->ssienr, SSI_SSIENR_SSI_EN_BITS);
+  ssi_hw->baudr = div;
+  hw_set_bits(&ssi_hw->ssienr, SSI_SSIENR_SSI_EN_BITS);
+}
 
 const uint16_t bnw[16 * 16] = {
     0xFFFF, 0x0000, 0xFFFF, 0x0000, 0xFFFF, 0x0000, 0xFFFF, 0x0000, 0xFFFF,
@@ -47,6 +63,7 @@ int main() {
   clock_configure(clk_peri, CLOCKS_CLK_SYS_CTRL_SRC_VALUE_CLKSRC_CLK_SYS_AUX,
                   CLOCKS_CLK_SYS_CTRL_AUXSRC_VALUE_CLKSRC_PLL_SYS,
                   SYS_CLOCK_MHZ * MHZ, PERI_CLOCK_MHZ * MHZ);
+  set_flash_div(clk_sys);
 
   // Turn on display
   gpio_init(PIN_TFT_VCC);
