@@ -1,9 +1,9 @@
 #include "tilemap.h"
 
-const uint16_t *tilemap_get_tile(const TileMap *tilemap, uint16_t id) {
-  if (!tilemap || !tilemap->tilemap || id >= tilemap->number_tiles)
+const uint16_t *tileset_get_tile(const TileSet *tileset, uint16_t id) {
+  if (!tileset || !tileset->tileset || id >= tileset->number_tiles)
     return NULL;
 
-  size_t pixels_per_tile = tilemap->tile_size * tilemap->tile_size;
-  return &tilemap->tilemap[id * pixels_per_tile];
+  size_t pixels_per_tile = tileset->tile_size * tileset->tile_size;
+  return &tileset->tileset[id * pixels_per_tile];
 }

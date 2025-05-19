@@ -25,13 +25,13 @@ typedef struct {
       uint8_t step;
     } sprite;
     struct {
-      const TileMap *tilemap;
-      Tile *tiles[MAX_TILES_8x8_NUM];
-    } tilemap8x8;
+      const TileSet *tileset;
+      Map *map;
+    } tileset8x8;
     struct {
-      const TileMap *tilemap;
-      Tile *tiles[MAX_TILES_16x16_NUM];
-    } tilemap16x16;
+      const TileSet *tileset;
+      Map *map;
+    } tileset16x16;
     struct {
       int x, y, w, h;
       uint16_t color;
@@ -80,7 +80,7 @@ void renderer_draw_sprite(int dst_x, int dst_y, const Sprite *sprite,
 /**
  * Queue a list of tiles (can be used a map) to be rendered.
  */
-void renderer_queue_tilemap(const TileMap *tilemap, Tile tiles[],
+void renderer_queue_tileset(const TileSet *tileset, Map *map,
                             enum TileSize tile_size);
 
 /**

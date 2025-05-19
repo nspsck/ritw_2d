@@ -5,39 +5,36 @@
 #include <stddef.h>
 #include <stdint.h>
 
-/* Target: enough to fill 240x240 display with disjunct tiles */
-#define MAX_TILES_8x8_NUM 30
-#define MAX_TILES_16x16_NUM 15
-
 enum TileSize {
   TILE8x8 = 8,
   TILE16x16 = 16,
 };
 
 /**
- * id is just the n-th tile in the TileMap
+ * Each TileSet only supports 256 tiles at max Using color565 format. Meaning: 1
+ * pixel = 16 bits = 2 bytes ONLY supports 8x8 or 16x16 tiles
  */
 typedef struct {
-  uint8_t id;
-  const uint16_t *tile;
-  enum TileSize size;
-} Tile;
+  enum TileSize tile_size;
+  uint8_t number_tiles;
+  const uint16_t *tileset;
+} TileSet;
 
 /**
- * Each TileMap only supports 256 tiles at max
- * Using color565 format. Meaning:
- * 1 pixel = 16 bits = 2 bytes
- * ONLY supports 8x8 or 16x16 tiles
+ * A Map that contains all the tiles with their id. All tiles must be of the
+ * same size. Either 16x16 or 8x8.
+ * map_size: size of the map.
+ * map: each number is a tile_id. tile_id ranges from 1 to 255. 0x00 means the
+ * map is empty on the current location, aka, black background
  */
 typedef struct {
-  uint8_t number_tiles;
-  const uint16_t *tilemap;
   enum TileSize tile_size;
-} TileMap;
+  const uint8_t *map[];
+} Map;
 
 /**
  * Get a pointer to the tile
  */
-const uint16_t *tilemap_get_tile(const TileMap *tilemap, uint16_t id);
+const uint16_t *tileset_get_tile(const TileSet *tileset, uint16_t id);
 
 #endif // !TILEMAP_H

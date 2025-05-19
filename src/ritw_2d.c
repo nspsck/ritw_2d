@@ -1,5 +1,4 @@
 #include "config.h"
-#include "hardware/structs/ssi.h"
 #include "pico/stdlib.h"
 #include <color.h>
 #include <hardware/adc.h>
@@ -18,19 +17,20 @@
 #include <stdint.h>
 #include <stdio.h>
 
-static void __no_inline_not_in_flash_func(set_flash_div)(int freq) {
-  const int max_freq = 133 * MHZ;
-  int div = (freq + max_freq - 1) / max_freq;
-  if (div % 2 == 1) {
-    div += 1;
-  }
-  while (ssi_hw->sr & SSI_SR_BUSY_BITS) {
-    ;
-  }
-  hw_clear_bits(&ssi_hw->ssienr, SSI_SSIENR_SSI_EN_BITS);
-  ssi_hw->baudr = div;
-  hw_set_bits(&ssi_hw->ssienr, SSI_SSIENR_SSI_EN_BITS);
-}
+// #include "hardware/structs/ssi.h"
+// static void set_flash_div(int freq) {
+//   const int max_freq = 133 * MHZ;
+//   int div = (freq + max_freq - 1) / max_freq;
+//   if (div % 2 == 1) {
+//     div += 1;
+//   }
+//   while (ssi_hw->sr & SSI_SR_BUSY_BITS) {
+//     ;
+//   }
+//   hw_clear_bits(&ssi_hw->ssienr, SSI_SSIENR_SSI_EN_BITS);
+//   ssi_hw->baudr = div;
+//   hw_set_bits(&ssi_hw->ssienr, SSI_SSIENR_SSI_EN_BITS);
+// }
 
 const uint16_t bnw[16 * 16] = {
     0xFFFF, 0x0000, 0xFFFF, 0x0000, 0xFFFF, 0x0000, 0xFFFF, 0x0000, 0xFFFF,
@@ -59,11 +59,10 @@ int main() {
   stdio_init_all();
   vreg_set_voltage(VREG_VOLTAGE_1_30);
   // Set sysclock to 250MHz and periclock to 125MHz
-  set_sys_clock_hz(SYS_CLOCK_MHZ * MHZ, false);
+  sleep_ms(10);
   clock_configure(clk_peri, CLOCKS_CLK_SYS_CTRL_SRC_VALUE_CLKSRC_CLK_SYS_AUX,
                   CLOCKS_CLK_SYS_CTRL_AUXSRC_VALUE_CLKSRC_PLL_SYS,
                   SYS_CLOCK_MHZ * MHZ, PERI_CLOCK_MHZ * MHZ);
-  set_flash_div(clk_sys);
 
   // Turn on display
   gpio_init(PIN_TFT_VCC);

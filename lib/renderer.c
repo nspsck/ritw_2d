@@ -127,18 +127,18 @@ void renderer_draw_sprite(int dst_x, int dst_y, const Sprite *sprite,
   }
 }
 
-void renderer_queue_tilemap(const TileMap *tilemap, Tile tiles[],
+void renderer_queue_tileset(const TileSet *tileset, Map *map,
                             enum TileSize tile_size) {
   if (render_count >= MAX_RENDER_JOBS)
     return;
   if (tile_size == TILE8x8) {
     render_list[render_count++] =
-        (RenderJob){.type = RENDER_TILEMAP, .tilemap8x8 = {tilemap, tiles}};
+        (RenderJob){.type = RENDER_TILEMAP, .tileset8x8 = {tileset, map}};
     return;
   }
   if (tile_size == TILE16x16) {
     render_list[render_count++] =
-        (RenderJob){.type = RENDER_TILEMAP, .tilemap16x16 = {tilemap, tiles}};
+        (RenderJob){.type = RENDER_TILEMAP, .tileset16x16 = {tileset, map}};
     return;
   }
 }
