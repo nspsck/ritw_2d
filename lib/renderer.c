@@ -95,9 +95,8 @@ void renderer_blit(int dst_x, int dst_y, const uint16_t *rect_obj, int w,
   }
 }
 
-void renderer_draw_sprite(int dst_x, int dst_y, const Sprite *sprite,
-                          uint8_t step) {
-  const uint16_t *sp = sprite_get_frame(sprite, step);
+void renderer_draw_sprite(int dst_x, int dst_y, Sprite *sprite) {
+  const uint16_t *sp = sprite_get_frame(sprite);
   int w = sprite->width;
   int h = sprite->height;
   for (int y = 0; y < h; y++) {
@@ -108,6 +107,7 @@ void renderer_draw_sprite(int dst_x, int dst_y, const Sprite *sprite,
       }
     }
   }
+  sprite->current_step = ++sprite->current_step % sprite->steps;
 }
 
 /**
@@ -143,11 +143,11 @@ void renderer_queue_tilemap(const TileSet *tileset, Map *map,
   }
 }
 
-void renderer_queue_sprite(int x, int y, const Sprite *sprite, uint8_t step) {
+void renderer_queue_sprite(int x, int y, Sprite *sprite) {
   if (render_count >= MAX_RENDER_JOBS)
     return;
   render_list[render_count++] =
-      (RenderJob){.type = RENDER_SPRITE, .sprite = {x, y, sprite, step}};
+      (RenderJob){.type = RENDER_SPRITE, .sprite = {x, y, sprite}};
 }
 
 void renderer_queue_rect(int x, int y, int w, int h, uint16_t color) {
@@ -171,8 +171,7 @@ void renderer_process_render_list(void) {
     case RENDER_TILEMAP:
       renderer_draw_map(job->tilemap.tileset, job->tilemap.map);
     case RENDER_SPRITE:
-      renderer_draw_sprite(job->sprite.x, job->sprite.y, job->sprite.sprite,
-                           job->sprite.step);
+      renderer_draw_sprite(job->sprite.x, job->sprite.y, job->sprite.sprite);
       break;
     case RENDER_RECT:
       renderer_fill_rect(job->rect.x, job->rect.y, job->rect.w, job->rect.h,

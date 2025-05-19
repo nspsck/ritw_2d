@@ -8,6 +8,7 @@
 /* up to 256 x 256 sprites */
 typedef struct {
   uint8_t steps; // 256 steps max, more than enough
+  uint8_t current_step;
   uint8_t width;
   uint8_t height;
   const uint16_t *sprite_array;
@@ -18,6 +19,6 @@ typedef struct {
  * Returns pointer to the top-left pixel of the frame (in RGB565).
  * step rounded down to step % sprite->steps.
  */
-const uint16_t *sprite_get_frame(const Sprite *sprite, uint8_t step);
+const uint16_t *sprite_get_frame(const Sprite *sprite);
 
 #endif // !SPRITE_H

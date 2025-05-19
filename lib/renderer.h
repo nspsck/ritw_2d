@@ -41,8 +41,7 @@ typedef struct {
   union {
     struct {
       int x, y;
-      const Sprite *sprite;
-      uint8_t step;
+      Sprite *sprite;
     } sprite;
     struct {
       const TileSet *tileset;
@@ -99,8 +98,7 @@ void renderer_blit(int dst_x, int dst_y, const uint16_t *sprite, int w, int h);
 /**
  * Draw a sprite pixel for pixel to an area, ignoring 0x0000.
  */
-void renderer_draw_sprite(int dst_x, int dst_y, const Sprite *sprite,
-                          uint8_t step);
+void renderer_draw_sprite(int dst_x, int dst_y, Sprite *sprite);
 
 /**
  * Queue a list of tiles (can be used a map) to be rendered. Also checks the
@@ -111,9 +109,9 @@ void renderer_queue_tilemap(const TileSet *tileset, Map *map,
 
 /**
  * Queue a sprite to be rendered, step automatically increased by one up on
- * next. render
+ * next render.
  */
-void renderer_queue_sprite(int x, int y, const Sprite *sprite, uint8_t step);
+void renderer_queue_sprite(int x, int y, Sprite *sprite);
 
 /**
  * queue a rect to be rendered.
@@ -137,6 +135,7 @@ void renderer_process_render_list(void);
  * Removes the item at given index if the index is in bound, then shift
  * everything to fill gap caused by removing the index. Decrease render_count by
  * 1 on sucess.
+ * !!! Note the index starts with 1 !!!
  */
 void render_list_remove_at(size_t index);
 
