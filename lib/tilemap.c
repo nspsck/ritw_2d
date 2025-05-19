@@ -1,6 +1,6 @@
 #include "tilemap.h"
 
-const uint16_t *tileset_get_tile(const TileSet *tileset, uint16_t id) {
+const uint16_t *tileset_get_tile(const TileSet *tileset, uint8_t id) {
   if (!tileset || !tileset->tileset || id >= tileset->number_tiles)
     return NULL;
 

@@ -1,11 +1,31 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+/* config.h has to be imported earlier than driver_select.h */
+#include "src/config.h"
+#include <driver_select.h>
 #include <sprite.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <tilemap.h>
+
+/**
+ * any value in style 0x00** performs the same, as soon as you change the higher
+ * bits, you lose ~1.8% performance on drawing pixels
+ */
+#define SPRITE_MASK 0x00ff
+
+#ifndef X_OFFSET
+#define X_OFFSET 0
+#endif // !X_OFFSET
+
+#ifndef Y_OFFSET
+#define Y_OFFSET 0
+#endif // !Y_OFFSET
+
+#define WRAPPED_WIDTH (DISPLAY_WIDTH - 2 * X_OFFSET)
+#define WRAPPED_HEIGHT (DISPLAY_HEIGHT - 2 * Y_OFFSET)
 
 #define MAX_RENDER_JOBS 64
 
@@ -27,11 +47,7 @@ typedef struct {
     struct {
       const TileSet *tileset;
       Map *map;
-    } tileset8x8;
-    struct {
-      const TileSet *tileset;
-      Map *map;
-    } tileset16x16;
+    } tilemap;
     struct {
       int x, y, w, h;
       uint16_t color;
@@ -43,8 +59,17 @@ typedef struct {
   };
 } RenderJob;
 
+typedef struct {
+  uint16_t x0;
+  uint16_t y0;
+  uint16_t w;
+  uint16_t h;
+} ViewPort;
+
 static RenderJob render_list[MAX_RENDER_JOBS];
 static size_t render_count = 0;
+static ViewPort render_viewport = {X_OFFSET, Y_OFFSET, WRAPPED_WIDTH,
+                                   WRAPPED_HEIGHT};
 
 /**
  * Initializes the renderer (if any internal state needs setup) up on needs.
@@ -78,9 +103,10 @@ void renderer_draw_sprite(int dst_x, int dst_y, const Sprite *sprite,
                           uint8_t step);
 
 /**
- * Queue a list of tiles (can be used a map) to be rendered.
+ * Queue a list of tiles (can be used a map) to be rendered. Also checks the
+ * dimensions just for memory safety. No operation on failed dimension check.
  */
-void renderer_queue_tileset(const TileSet *tileset, Map *map,
+void renderer_queue_tilemap(const TileSet *tileset, Map *map,
                             enum TileSize tile_size);
 
 /**

@@ -1,24 +1,7 @@
 #include "renderer.h"
-/* config.h has to be imported earlier than driver_select.h */
-#include "src/config.h"
-#include <driver_select.h>
-
-/**
- * any value in style 0x00** performs the same, as soon as you change the higher
- * bits, you lose ~1.8% performance on drawing pixels
- */
-#define SPRITE_MASK 0x00ff
-
-#ifndef X_OFFSET
-#define X_OFFSET 0
-#endif // !X_OFFSET
-
-#ifndef Y_OFFSET
-#define Y_OFFSET 0
-#endif // !Y_OFFSET
-
-#define WRAPPED_WIDTH (DISPLAY_WIDTH - 2 * X_OFFSET)
-#define WRAPPED_HEIGHT (DISPLAY_HEIGHT - 2 * Y_OFFSET)
+#include "driver_select.h"
+#include "tilemap.h"
+#include <stdint.h>
 
 // Static framebuffer (RGB565)
 static uint16_t framebuffer[WRAPPED_WIDTH * WRAPPED_HEIGHT];
@@ -127,19 +110,36 @@ void renderer_draw_sprite(int dst_x, int dst_y, const Sprite *sprite,
   }
 }
 
-void renderer_queue_tileset(const TileSet *tileset, Map *map,
+/**
+ * currently only support render_viewport == map_viewport
+ * and render_viewport should always fit in screen
+ */
+void renderer_draw_map(const TileSet *tileset, Map *map) {
+  int tile_size = map->tile_size;
+  if (render_viewport.w != map->viewport_w * tile_size ||
+      render_viewport.h != map->viewport_h * tile_size) {
+    return;
+  }
+  display_set_area(render_viewport.x0, render_viewport.y0,
+                   render_viewport.x0 + render_viewport.w,
+                   render_viewport.y0 + render_viewport.h);
+  uint8_t id;
+  for (int y = 0; y < map->viewport_h; y++) {
+    for (int x = 0; x < map->viewport_w; x++) {
+      id = map->map[map->viewport_x0 + x + map->width * (map->viewport_y0 + y)];
+      display_write_buffer(tileset_get_tile(tileset, id),
+                           tile_size * tile_size);
+    }
+  }
+}
+
+void renderer_queue_tilemap(const TileSet *tileset, Map *map,
                             enum TileSize tile_size) {
   if (render_count >= MAX_RENDER_JOBS)
     return;
-  if (tile_size == TILE8x8) {
+  if (tile_size == tileset->tile_size && tileset->tile_size == map->tile_size) {
     render_list[render_count++] =
-        (RenderJob){.type = RENDER_TILEMAP, .tileset8x8 = {tileset, map}};
-    return;
-  }
-  if (tile_size == TILE16x16) {
-    render_list[render_count++] =
-        (RenderJob){.type = RENDER_TILEMAP, .tileset16x16 = {tileset, map}};
-    return;
+        (RenderJob){.type = RENDER_TILEMAP, .tilemap = {tileset, map}};
   }
 }
 
@@ -169,7 +169,7 @@ void renderer_process_render_list(void) {
     RenderJob *job = &render_list[i];
     switch (job->type) {
     case RENDER_TILEMAP:
-      break;
+      renderer_draw_map(job->tilemap.tileset, job->tilemap.map);
     case RENDER_SPRITE:
       renderer_draw_sprite(job->sprite.x, job->sprite.y, job->sprite.sprite,
                            job->sprite.step);

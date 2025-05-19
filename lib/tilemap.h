@@ -24,17 +24,27 @@ typedef struct {
  * A Map that contains all the tiles with their id. All tiles must be of the
  * same size. Either 16x16 or 8x8.
  * map_size: size of the map.
- * map: each number is a tile_id. tile_id ranges from 1 to 255. 0x00 means the
+ * map:
+ * - each number is a tile_id. tile_id ranges from 1 to 255. 0x00 means the
  * map is empty on the current location, aka, black background
+ * - map's dimension width * height.
+ * viewport_w, viewport_h for tile_size 8*8 should be a multiple of 8
+ * viewport_w, viewport_h for tile_size 16*16 should be a multiple of 16
  */
 typedef struct {
   enum TileSize tile_size;
-  const uint8_t *map[];
+  uint16_t viewport_x0;
+  uint16_t viewport_y0;
+  uint16_t viewport_w;
+  uint16_t viewport_h;
+  uint16_t width;
+  uint16_t height;
+  const uint8_t *map;
 } Map;
 
 /**
- * Get a pointer to the tile
+ * Get a pointer to the tile with id in the specific tileset.
  */
-const uint16_t *tileset_get_tile(const TileSet *tileset, uint16_t id);
+const uint16_t *tileset_get_tile(const TileSet *tileset, uint8_t id);
 
 #endif // !TILEMAP_H
