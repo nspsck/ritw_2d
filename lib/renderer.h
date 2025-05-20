@@ -76,6 +76,12 @@ static ViewPort render_viewport = {X_OFFSET, Y_OFFSET, WRAPPED_WIDTH,
 void renderer_init(void);
 
 /**
+ * Set the viewport to render. After setting the viewport, you may assume the
+ * drawing will have the relative offset to the viewport
+ */
+void renderer_set_viewport(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
+
+/**
  * Draws a single pixel at (x, y).
  */
 void renderer_draw_pixel(int x, int y, uint16_t color);
@@ -103,6 +109,9 @@ void renderer_draw_sprite(int dst_x, int dst_y, Sprite *sprite);
 /**
  * Queue a list of tiles (can be used a map) to be rendered. Also checks the
  * dimensions just for memory safety. No operation on failed dimension check.
+ *
+ * If your tilemap's viewport is always exact to the render_viewport, you may
+ * define MAP_VIEWPORT_EUALS_RENDERVIEWPORT for maximum performance.
  */
 void renderer_queue_tilemap(const TileSet *tileset, Map *map,
                             enum TileSize tile_size);
@@ -127,14 +136,15 @@ void renderer_queue_pixel(int x, int y, uint16_t color);
  * Renders everything on to the screen, in the order items were added to the
  * list, then set render_count to 0 with causes new items to be added again at
  * the beginning of the render_list, hence achieving a "clearing render queue"
- * effect. Note you have to make sure the lifecycle of added items are managed.
+ * effect. Note you have to make sure the lifecycle of added items are
+ * managed.
  */
 void renderer_process_render_list(void);
 
 /**
  * Removes the item at given index if the index is in bound, then shift
- * everything to fill gap caused by removing the index. Decrease render_count by
- * 1 on sucess.
+ * everything to fill gap caused by removing the index. Decrease render_count
+ * by 1 on sucess.
  * !!! Note the index starts with 1 !!!
  */
 void render_list_remove_at(size_t index);
