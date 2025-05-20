@@ -153,7 +153,7 @@ void render_list_remove_at(size_t index);
  * Returns true  if given sprite is removed. Decrease render_count by 1 on
  * sucess.
  */
-bool render_list_remove_sprite(const Sprite *sprite_ptr);
+void render_list_remove_sprite(const Sprite *sprite_ptr);
 
 /**
  * Returns true  if given job is added. Increase render_count by 1 on

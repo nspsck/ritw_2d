@@ -147,9 +147,14 @@ int main() {
       time_ms = us_to_ms(time_us_64());
     }
 
-    renderer_queue_sprite(dst_x, dst_y, &sprite);
+    for (int i = 0; i < MAX_RENDER_JOBS; i++) {
+      renderer_queue_sprite(dst_x, dst_y, &sprite);
+      renderer_queue_sprite(dst_x, dst_y, &sprite);
+      renderer_queue_sprite(dst_x, dst_y, &sprite);
+    }
+    render_list_remove_sprite(&sprite);
     renderer_process_render_list();
-    sleep_ms(150);
+    sleep_ms(16);
     renderer_queue_rect(dst_x, dst_y, sprite.width, sprite.height, color);
 
     if (dst_x >= 128 || dst_y >= 160) {

@@ -1,4 +1,5 @@
 #include "renderer.h"
+#include <stdio.h>
 
 void renderer_init(void) { display_init(); }
 
@@ -204,15 +205,14 @@ void render_list_remove_at(size_t index) {
   render_count--;
 }
 
-bool render_list_remove_sprite(const Sprite *sprite) {
-  for (size_t i = 0; i < render_count; i++) {
+void render_list_remove_sprite(const Sprite *sprite) {
+  // check from last one to avoid same sprites being overlooked
+  for (size_t i = render_count; i > 0; --i) {
     if (render_list[i].type == RENDER_SPRITE &&
         render_list[i].sprite.sprite == sprite) {
       render_list_remove_at(i);
-      return true;
     }
   }
-  return false;
 }
 
 bool render_list_add(RenderJob job) {
