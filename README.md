@@ -3,7 +3,7 @@
 Re-Invent The Wheel, a wanna be 2d game engine designed for microcontrollers. Currently using `pi pico` as standard MCU, can be simply ported to other plattforms.
 
 # Setup
-If you were on Windows, just use the [Raspberry Pi Pico Extention](## Raspberry Pi Pico Extention). On Linux, you get more options.
+If you were on Windows, just use the Raspberry Pi Pico Extention. On Linux, you get more options.
 
 ## Raspberry Pi Pico Extention
 This is probably the easiest way to setup the developement enviroment for this project. Simply install the corresponding extention in your VSCode-based editor and import the project.
