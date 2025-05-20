@@ -1,5 +1,4 @@
 #include "renderer.h"
-#include "tilemap.h"
 
 void renderer_init(void) { display_init(); }
 

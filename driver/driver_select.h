@@ -4,6 +4,30 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/**
+ * Every driver should provide the following functions:
+ *
+ * display_init(void): go through necessary steps to set up the display.
+ *
+ * display_set_area(uint16_t x0, uint16_t y0, uint16_t x1,uint16_t y1): allow
+ * the renderer to set a specific area to draw to.
+ *
+ * display_write_cmd(uint8_t cmd): write command to display to control display's
+ * hardware specific features.
+ *
+ * display_write_data(const uint8_t *data, size_t len): pass cmd (command) data
+ * to the display.
+ *
+ * display_write_buffer(const uint16_t *data, size_t len): write color data to
+ * the display.
+ *
+ * display_clear(uint16_t color): wipe all content of the display with given
+ * color.
+ *
+ * display_fill_color(uint16_t color, size_t len): used for drawing functions,
+ * allow effecient color-filling without given buffer storing color data.
+ */
+
 #ifdef DRIVER_ST7789
 #include "st7789.h"
 

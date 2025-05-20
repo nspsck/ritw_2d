@@ -6,9 +6,7 @@
 #include <hardware/flash.h>
 #include <hardware/gpio.h>
 #include <hardware/pll.h>
-#include <hardware/regs/clocks.h>
 #include <hardware/spi.h>
-#include <hardware/structs/clocks.h>
 #include <hardware/timer.h>
 #include <hardware/vreg.h>
 #include <pico/time.h>
