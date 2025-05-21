@@ -1,5 +1,6 @@
 #include "config.h"
 #include "pico/stdlib.h"
+#include "rp2040_input.h"
 #include <color.h>
 #include <hardware/adc.h>
 #include <hardware/clocks.h>
@@ -16,6 +17,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <wchar.h>
 
 #include "hardware/structs/ssi.h"
 static void __no_inline_not_in_flash_func(set_flash_div)(int freq) {
@@ -60,6 +62,8 @@ Snake snake;
 Point food;
 bool running = true;
 bool direction_chagned = false;
+
+InputState input;
 
 bool occupied[GRID_WIDTH][GRID_HEIGHT]; // 0 = empty, 1 = occupied
 Point empty_cells[GRID_SIZE];
@@ -162,6 +166,37 @@ void draw() {
   renderer_process_render_list();
 }
 
+void handle_input() {
+  if (!direction_chagned) {
+    if (input.y) {
+
+      if (snake.dy == 0) {
+        snake.dx = 0;
+        snake.dy = -1;
+        direction_chagned = true;
+      }
+    } else if (input.a) {
+      if (snake.dy == 0) {
+        snake.dx = 0;
+        snake.dy = 1;
+        direction_chagned = true;
+      }
+    } else if (input.x) {
+      if (snake.dx == 0) {
+        snake.dx = -1;
+        snake.dy = 0;
+        direction_chagned = true;
+      }
+    } else if (input.b) {
+      if (snake.dx == 0) {
+        snake.dx = 1;
+        snake.dy = 0;
+        direction_chagned = true;
+      }
+    }
+  }
+}
+
 int main() {
 
   vreg_set_voltage(VREG_VOLTAGE_1_30);
@@ -177,11 +212,6 @@ int main() {
   gpio_init(PIN_TFT_VCC);
   gpio_set_dir(PIN_TFT_VCC, GPIO_OUT);
   gpio_put(PIN_TFT_VCC, 1);
-
-  adc_init();
-  adc_set_temp_sensor_enabled(true);
-  adc_select_input(4);
-  uint16_t result = adc_read();
 
   renderer_init();
 
@@ -199,18 +229,27 @@ int main() {
   uint32_t now = us_to_ms(time_us_64());
   uint32_t last_tick = us_to_ms(time_us_64());
 
+  input_init();
+
+  adc_set_temp_sensor_enabled(true);
+  uint16_t result;
+
   while (true) {
     if ((us_to_ms(time_us_64()) - time_ms) >= 1000) {
       printf("FPS: %d\n", fps);
       printf("Core Frequency: %d MHz\n", clock_get_hz(clk_sys) / MHZ);
       printf("SPI baudrate: %d MHz\n", spi_get_baudrate(SPI_PORT) / MHZ);
       printf("Peri Frequency: %d MHz\n", clock_get_hz(clk_peri) / MHZ);
+      adc_select_input(4);
+      result = adc_read();
       printf("Core Temp: %f Celsius\n",
              27 - (result * 3.3f / (1 << 12) - 0.706) / 0.001721);
-      result = adc_read();
       fps = 0;
       time_ms = us_to_ms(time_us_64());
     }
+
+    input_poll(&input);
+    handle_input();
 
     now = us_to_ms(time_us_64());
     if (now - last_tick >= 200) {
