@@ -1,7 +1,4 @@
 #include "st7789.h"
-#include "hardware/spi.h"
-#include "pico/stdlib.h"
-#include <stdint.h>
 
 /* FPS does not seem to increase anymore for pi pico */
 #define BUFFER_SIZE 256

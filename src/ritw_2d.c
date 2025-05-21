@@ -1,5 +1,6 @@
 #include "config.h"
 #include "pico/stdlib.h"
+#include "rp2040_input.h"
 #include <color.h>
 #include <hardware/adc.h>
 #include <hardware/clocks.h>
@@ -90,10 +91,10 @@ uint16_t bnw[16 * 32] = {
     0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF, 0xFFFF,
 };
 
-Sprite sprite = {.height = 16,
-                 .width = 16,
+Sprite sprite = {.height = 8,
+                 .width = 8,
                  .current_step = 0,
-                 .steps = 2,
+                 .steps = 8,
                  .sprite_array = bnw};
 
 #define SYS_CLOCK_MHZ 400
@@ -101,7 +102,6 @@ Sprite sprite = {.height = 16,
 
 int main() {
 
-  stdio_init_all();
   vreg_set_voltage(VREG_VOLTAGE_1_30);
   set_flash_div(SYS_CLOCK_MHZ * MHZ);
   // Set sysclock to 250MHz and periclock to 125MHz
@@ -109,16 +109,12 @@ int main() {
   clock_configure(clk_peri, CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLK_SYS,
                   CLOCKS_CLK_PERI_CTRL_AUXSRC_VALUE_CLKSRC_PLL_SYS,
                   SYS_CLOCK_MHZ * MHZ, PERI_CLOCK_MHZ * MHZ);
+  stdio_init_all();
 
   // Turn on display
   gpio_init(PIN_TFT_VCC);
   gpio_set_dir(PIN_TFT_VCC, GPIO_OUT);
   gpio_put(PIN_TFT_VCC, 1);
-
-  adc_init();
-  adc_set_temp_sensor_enabled(true);
-  adc_select_input(4);
-  uint16_t result = adc_read();
 
   renderer_init();
 
@@ -134,28 +130,38 @@ int main() {
   uint16_t color = rgb_to_swapped_565(250, 250, 0);
   renderer_clear(color);
 
+  InputState input;
+  input_init();
+
+  adc_set_temp_sensor_enabled(true);
+  uint16_t result;
+
   while (true) {
     if ((us_to_ms(time_us_64()) - time_ms) >= 1000) {
       printf("FPS: %d\n", fps);
       printf("Core Frequency: %d MHz\n", clock_get_hz(clk_sys) / MHZ);
       printf("SPI baudrate: %d MHz\n", spi_get_baudrate(SPI_PORT) / MHZ);
       printf("Peri Frequency: %d MHz\n", clock_get_hz(clk_peri) / MHZ);
+      adc_select_input(4);
+      result = adc_read();
       printf("Core Temp: %f Celsius\n",
              27 - (result * 3.3f / (1 << 12) - 0.706) / 0.001721);
-      result = adc_read();
       fps = 0;
       time_ms = us_to_ms(time_us_64());
     }
 
-    for (int i = 0; i < MAX_RENDER_JOBS; i++) {
-      renderer_queue_sprite(dst_x, dst_y, &sprite);
-      renderer_queue_sprite(dst_x, dst_y, &sprite);
-      renderer_queue_sprite(dst_x, dst_y, &sprite);
+    input_poll(&input);
+
+    if (input.start) {
+      for (int i = 0; i < MAX_RENDER_JOBS / 2; i++) {
+        renderer_queue_sprite(dst_x + i, dst_y + i, &sprite);
+      }
+      renderer_process_render_list();
+      for (int i = 0; i < MAX_RENDER_JOBS / 2; i++) {
+        renderer_queue_rect(dst_x + i, dst_y + i, sprite.width, sprite.height,
+                            color);
+      }
     }
-    render_list_remove_sprite(&sprite);
-    renderer_process_render_list();
-    sleep_ms(16);
-    renderer_queue_rect(dst_x, dst_y, sprite.width, sprite.height, color);
 
     if (dst_x >= 128 || dst_y >= 160) {
       dst_x = dst_y = 0;

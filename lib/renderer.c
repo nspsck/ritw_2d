@@ -1,5 +1,4 @@
 #include "renderer.h"
-#include <stdio.h>
 
 void renderer_init(void) { display_init(); }
 

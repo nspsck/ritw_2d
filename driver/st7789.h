@@ -2,6 +2,8 @@
 #define ST7789_H
 
 #include "src/config.h"
+#include <hardware/spi.h>
+#include <pico/stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
 
