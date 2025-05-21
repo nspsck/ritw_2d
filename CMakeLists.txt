@@ -68,6 +68,7 @@ target_include_directories(ritw_2d PRIVATE
 # Add any user requested libraries
 target_link_libraries(ritw_2d 
         pico_stdlib
+        pico_rand
         hardware_spi
         hardware_clocks
         hardware_vreg
