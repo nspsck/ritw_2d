@@ -199,7 +199,7 @@ void handle_input() {
 
 int main() {
 
-  vreg_set_voltage(VREG_VOLTAGE_1_30);
+  // vreg_set_voltage(VREG_VOLTAGE_1_30);
   set_flash_div(SYS_CLOCK_MHZ * MHZ);
   // Set sysclock to 250MHz and periclock to 125MHz
   set_sys_clock_hz(SYS_CLOCK_MHZ * MHZ, false);
