@@ -145,6 +145,7 @@ void update() {
   for (int i = snake.length; i > 0; i--) {
     snake.body[i] = snake.body[i - 1];
   }
+  draw_rect(snake.body[snake.length], BG_COLOR);
   snake.body[0] = new_head;
 
   /* Check food */
@@ -157,7 +158,6 @@ void update() {
     }
     rand_food();
   }
-  draw_rect(snake.body[snake.length], BG_COLOR);
 }
 
 void draw() {
