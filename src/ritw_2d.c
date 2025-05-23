@@ -1,6 +1,6 @@
 #include "config.h"
 #include "pico/stdlib.h"
-#include "rp2040_input.h"
+#include "ws1_3_input.h"
 #include <color.h>
 #include <hardware/adc.h>
 #include <hardware/clocks.h>
@@ -37,9 +37,9 @@ static void __no_inline_not_in_flash_func(set_flash_div)(int freq) {
 #define SYS_CLOCK_MHZ 250
 #define PERI_CLOCK_MHZ 125
 
-#define WINDOW_WIDTH 128
-#define WINDOW_HEIGHT 160
-#define TILE_SIZE 8
+#define WINDOW_WIDTH 240
+#define WINDOW_HEIGHT 240
+#define TILE_SIZE 16
 #define GRID_WIDTH (WINDOW_WIDTH / TILE_SIZE)
 #define GRID_HEIGHT (WINDOW_HEIGHT / TILE_SIZE)
 #define GRID_SIZE GRID_WIDTH *GRID_HEIGHT
@@ -145,6 +145,7 @@ void update() {
   for (int i = snake.length; i > 0; i--) {
     snake.body[i] = snake.body[i - 1];
   }
+  draw_rect(snake.body[snake.length], BG_COLOR);
   snake.body[0] = new_head;
 
   /* Check food */
@@ -157,7 +158,6 @@ void update() {
     }
     rand_food();
   }
-  draw_rect(snake.body[snake.length], BG_COLOR);
 }
 
 void draw() {
@@ -168,26 +168,26 @@ void draw() {
 
 void handle_input() {
   if (!direction_chagned) {
-    if (input.y) {
+    if (input.up) {
 
       if (snake.dy == 0) {
         snake.dx = 0;
         snake.dy = -1;
         direction_chagned = true;
       }
-    } else if (input.a) {
+    } else if (input.down) {
       if (snake.dy == 0) {
         snake.dx = 0;
         snake.dy = 1;
         direction_chagned = true;
       }
-    } else if (input.x) {
+    } else if (input.left) {
       if (snake.dx == 0) {
         snake.dx = -1;
         snake.dy = 0;
         direction_chagned = true;
       }
-    } else if (input.b) {
+    } else if (input.right) {
       if (snake.dx == 0) {
         snake.dx = 1;
         snake.dy = 0;
@@ -208,11 +208,6 @@ int main() {
                   SYS_CLOCK_MHZ * MHZ, PERI_CLOCK_MHZ * MHZ);
   stdio_init_all();
 
-  // Turn on display
-  gpio_init(PIN_TFT_VCC);
-  gpio_set_dir(PIN_TFT_VCC, GPIO_OUT);
-  gpio_put(PIN_TFT_VCC, 1);
-
   renderer_init();
 
   uint16_t fps = 0;
@@ -226,14 +221,14 @@ int main() {
     draw_rect(snake.body[i], SNAKE_COLOR);
   }
 
-  uint32_t now = us_to_ms(time_us_64());
-  uint32_t last_tick = us_to_ms(time_us_64());
-
   input_init();
 
+  adc_init();
   adc_set_temp_sensor_enabled(true);
   uint16_t result;
 
+  uint32_t now = us_to_ms(time_us_64());
+  uint32_t last_tick = us_to_ms(time_us_64());
   while (true) {
     if ((us_to_ms(time_us_64()) - time_ms) >= 1000) {
       printf("FPS: %d\n", fps);

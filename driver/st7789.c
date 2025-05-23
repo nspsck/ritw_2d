@@ -89,8 +89,8 @@ void st7789_init(void) {
   uint8_t colmod = 0x55;
   st7789_write_data(&colmod, 1); // 16-bit color
   st7789_write_cmd(0x36);
-  uint8_t madctl = 0x00;
+  uint8_t madctl = 0x70;
   st7789_write_data(&madctl, 1); // Memory access control
-  //  st7789_write_cmd(0x21);        // Inversion ON
-  st7789_write_cmd(0x29); // Display on
+  st7789_write_cmd(0x21);        // Inversion ON
+  st7789_write_cmd(0x29);        // Display on
 }

@@ -39,7 +39,7 @@ pico_sdk_init()
 set(SOURCES
     src/ritw_2d.c
     driver/st7789.c
-    driver/rp2040_input.c
+    driver/ws1_3_input.c
     lib/renderer.c
     lib/tilemap.c
     lib/color.c

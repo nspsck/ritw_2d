@@ -7,18 +7,17 @@
 #define DRIVER_ST7789
 
 // SPI Defines
-#define SPI_PORT spi0
-#define PIN_SCK 18
-#define PIN_TX 19
-#define PIN_CS 17
-#define PIN_DC 16
-#define PIN_RST 20
+#define SPI_PORT spi1
+#define PIN_SCK 11
+#define PIN_TX 10
+#define PIN_CS 8
+#define PIN_DC 25
+#define PIN_RST 27
 
 // Display Defines
-#define PIN_BL null
-#define PIN_TFT_VCC 21
-#define DISPLAY_WIDTH 132
-#define DISPLAY_HEIGHT 162
-#define X_OFFSET 2
-#define Y_OFFSET 1
+#define DISPLAY_WIDTH 240
+#define DISPLAY_HEIGHT 240
+#define X_OFFSET 0
+#define Y_OFFSET 0
+
 #endif
