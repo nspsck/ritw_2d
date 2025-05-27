@@ -1,8 +1,5 @@
 #include "st7789.h"
 
-/* FPS does not seem to increase anymore for pi pico */
-#define BUFFER_SIZE 256
-
 static inline void dc_select() { gpio_put(PIN_DC, 1); }
 static inline void dc_deselect() { gpio_put(PIN_DC, 0); }
 static inline void cs_select() { gpio_put(PIN_CS, 0); }
@@ -89,6 +86,7 @@ void st7789_init(void) {
   uint8_t colmod = 0x55;
   st7789_write_data(&colmod, 1); // 16-bit color
   st7789_write_cmd(0x36);
+  // 0x70 for Wavesahre 1.3 inch Display.
   uint8_t madctl = 0x00;
   st7789_write_data(&madctl, 1); // Memory access control
   //  st7789_write_cmd(0x21);        // Inversion ON

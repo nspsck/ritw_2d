@@ -15,9 +15,7 @@ typedef struct {
 } Sprite;
 
 /**
- * Get a pointer to the frame at index step
- * Returns pointer to the top-left pixel of the frame (in RGB565).
- * step rounded down to step % sprite->steps.
+ * Get a pointer to the given sprite's current frame.
  */
 const uint16_t *sprite_get_frame(const Sprite *sprite);
 

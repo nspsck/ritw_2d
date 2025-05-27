@@ -43,7 +43,8 @@ typedef struct {
 } Map;
 
 /**
- * Get a pointer to the tile with id in the specific tileset.
+ * Get a pointer to the tile with id in the specific tileset. Returns NULL if id
+ * is out of bound.
  */
 const uint16_t *tileset_get_tile(const TileSet *tileset, uint8_t id);
 
