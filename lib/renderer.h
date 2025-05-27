@@ -92,17 +92,28 @@ void renderer_draw_pixel(int x, int y, uint16_t color);
 void renderer_clear(uint16_t color);
 
 /**
- * fills a rectangle at (x, y) with size (w x h).
+ * Fills a rectangle at (x, y) with size (w x h).
  */
 void renderer_fill_rect(int x, int y, int w, int h, uint16_t color);
 
 /**
- * Blit a rectangle of content to an area.
+ * Draw a horizontal line with length l and given color.
+ */
+void renderer_hline(int x, int y, int l, uint16_t color);
+
+/**
+ * Draw a vertical line with length l and given color.
+ */
+void renderer_vline(int x, int y, int l, uint16_t color);
+
+/**
+ * Blit content in a rectangular form to an area.
  */
 void renderer_blit(int dst_x, int dst_y, const uint16_t *sprite, int w, int h);
 
 /**
- * Draw a sprite pixel for pixel to an area, ignoring 0x0000.
+ * Draw a sprite pixel for pixel to an area, ignoring pixels of color
+ * SPRITE_MASK (0x00ff by default).
  */
 void renderer_draw_sprite(int dst_x, int dst_y, Sprite *sprite);
 
@@ -123,12 +134,12 @@ void renderer_queue_tilemap(const TileSet *tileset, Map *map,
 void renderer_queue_sprite(int x, int y, Sprite *sprite);
 
 /**
- * queue a rect to be rendered.
+ * Queue a rect to be rendered.
  */
 void renderer_queue_rect(int x, int y, int w, int h, uint16_t color);
 
 /**
- * queue a pixel to be rendered, serioysly, why do you need this?
+ * Queue a pixel to be rendered. But serioysly, why do you need this?
  */
 void renderer_queue_pixel(int x, int y, uint16_t color);
 
@@ -150,14 +161,14 @@ void renderer_process_render_list(void);
 void render_list_remove_at(size_t index);
 
 /**
- * Returns true  if given sprite is removed. Decrease render_count by 1 on
- * sucess.
+ * Remove the specific sprite from the render_list. Returns true if given sprite
+ * is removed. Decrease render_count by 1 on sucess.
  */
 void render_list_remove_sprite(const Sprite *sprite_ptr);
 
 /**
- * Returns true  if given job is added. Increase render_count by 1 on
- * sucess.
+ * Adds a RenderJob to the render_list. Returns true if given job is added.
+ * Increase render_count by 1 on sucess.
  */
 bool render_list_add(RenderJob job);
 

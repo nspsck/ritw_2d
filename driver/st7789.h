@@ -7,6 +7,12 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/**
+ * BUFFER_SIZE in 2 Bytes, aka 16 bits. FPS does not seem to increase anymore
+ * for pi pico.
+ */
+#define BUFFER_SIZE 256
+
 #ifdef DISPLAY_WIDTH
 #define ST7789_WIDTH (DISPLAY_WIDTH)
 #else

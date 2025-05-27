@@ -22,6 +22,54 @@ void renderer_set_viewport(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
   render_viewport.h = h;
 }
 
+void renderer_hline(int x, int y, int l, uint16_t color) {
+  int x0 = x + render_viewport.x0;
+  int y0 = y + render_viewport.y0;
+  int x1 = x0 + l - 1;
+  int y1 = y0;
+
+  int x_min = render_viewport.x0;
+  int y_min = render_viewport.y0;
+  int x_max = render_viewport.x0 + render_viewport.w - 1;
+  int y_max = render_viewport.y0 + render_viewport.h - 1;
+
+  // Rectangle is completely outside viewport
+  if (x1 < x_min || y1 < y_min || x0 > x_max || y0 > y_max) {
+    return;
+  }
+
+  if (x0 < x_min)
+    x0 = x_min;
+  if (x1 > x_max)
+    x1 = x_max;
+  display_set_area(x0, y0, x1, y1);
+  display_fill_color(color, x1 - x0);
+}
+
+void renderer_vline(int x, int y, int l, uint16_t color) {
+  int x0 = x + render_viewport.x0;
+  int y0 = y + render_viewport.y0;
+  int x1 = x0;
+  int y1 = y0 + l - 1;
+
+  int x_min = render_viewport.x0;
+  int y_min = render_viewport.y0;
+  int x_max = render_viewport.x0 + render_viewport.w - 1;
+  int y_max = render_viewport.y0 + render_viewport.h - 1;
+
+  // Rectangle is completely outside viewport
+  if (x1 < x_min || y1 < y_min || x0 > x_max || y0 > y_max) {
+    return;
+  }
+
+  if (y0 < y_min)
+    y0 = y_min;
+  if (y1 > y_max)
+    y1 = y_max;
+  display_set_area(x0, y0, x1, y1);
+  display_fill_color(color, y1 - y0);
+}
+
 void renderer_fill_rect(int x, int y, int w, int h, uint16_t color) {
   int x0 = x + render_viewport.x0;
   int y0 = y + render_viewport.y0;
