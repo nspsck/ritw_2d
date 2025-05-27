@@ -12,7 +12,7 @@ enum TileSize {
 
 /**
  * Each TileSet only supports 256 tiles at max Using color565 format. Meaning: 1
- * pixel = 16 bits = 2 bytes ONLY supports 8x8 or 16x16 tiles
+ * pixel = 16 bits = 2 bytes ONLY supports 8x8 or 16x16 tiles.
  */
 typedef struct {
   enum TileSize tile_size;
@@ -28,8 +28,8 @@ typedef struct {
  * - each number is a tile_id. tile_id ranges from 1 to 255. 0x00 means the
  * map is empty on the current location, aka, black background
  * - map's dimension width * height.
- * viewport_w, viewport_h for tile_size 8*8 should be a multiple of 8
- * viewport_w, viewport_h for tile_size 16*16 should be a multiple of 16
+ * viewport_w, viewport_h for tile_size 8*8 should be a multiple of 8,
+ * viewport_w, viewport_h for tile_size 16*16 should be a multiple of 16.
  */
 typedef struct {
   enum TileSize tile_size;

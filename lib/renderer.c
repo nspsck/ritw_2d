@@ -13,7 +13,7 @@ void renderer_draw_pixel(int x, int y, uint16_t color) {
 void renderer_clear(uint16_t color) { display_clear(color); }
 
 void renderer_set_viewport(uint16_t x, uint16_t y, uint16_t w, uint16_t h) {
-  // viewport should strictly fit in the screen
+  /* viewport should strictly fit in the screen. */
   if (x < X_OFFSET || w > WRAPPED_WIDTH || y < Y_OFFSET || h > WRAPPED_HEIGHT)
     return;
   render_viewport.x0 = x;
@@ -33,7 +33,7 @@ void renderer_hline(int x, int y, int l, uint16_t color) {
   int x_max = render_viewport.x0 + render_viewport.w - 1;
   int y_max = render_viewport.y0 + render_viewport.h - 1;
 
-  // Rectangle is completely outside viewport
+  /* Line is completely outside viewport */
   if (x1 < x_min || y1 < y_min || x0 > x_max || y0 > y_max) {
     return;
   }
@@ -57,7 +57,7 @@ void renderer_vline(int x, int y, int l, uint16_t color) {
   int x_max = render_viewport.x0 + render_viewport.w - 1;
   int y_max = render_viewport.y0 + render_viewport.h - 1;
 
-  // Rectangle is completely outside viewport
+  /* Line is completely outside viewport. */
   if (x1 < x_min || y1 < y_min || x0 > x_max || y0 > y_max) {
     return;
   }
@@ -81,12 +81,12 @@ void renderer_fill_rect(int x, int y, int w, int h, uint16_t color) {
   int x_max = render_viewport.x0 + render_viewport.w - 1;
   int y_max = render_viewport.y0 + render_viewport.h - 1;
 
-  // Rectangle is completely outside viewport
+  /* Rectangle is completely outside viewport. */
   if (x1 < x_min || y1 < y_min || x0 > x_max || y0 > y_max) {
     return;
   }
 
-  // Clamp to viewport
+  /* Clamp to viewport. */
   if (x0 < x_min)
     x0 = x_min;
   if (y0 < y_min)
@@ -115,18 +115,18 @@ void renderer_blit(int dst_x, int dst_y, const uint16_t *rect_obj, int w,
   int x_max = render_viewport.x0 + render_viewport.w - 1;
   int y_max = render_viewport.y0 + render_viewport.h - 1;
 
-  // Fully outside viewport
+  /* Fully outside viewport. */
   if (x1 < x_min || y1 < y_min || x0 > x_max || y0 > y_max)
     return;
 
-  // Fully inside viewport
+  /* Fully inside viewport. */
   if (x0 >= x_min && y0 >= y_min && x1 <= x_max && y1 <= y_max) {
     display_set_area(x0, y0, x1, y1);
     display_write_buffer(rect_obj, w * h);
     return;
   }
 
-  // Clipped draw, line by line
+  /* Clipped draw, line by line. */
   for (int row = 0; row < h; ++row) {
     int screen_y = dst_y + row + render_viewport.y0;
     if (screen_y < y_min || screen_y > y_max)
@@ -169,11 +169,13 @@ void renderer_draw_map(const TileSet *tileset, Map *map) {
       render_viewport.h != map->viewport_h * tile_size) {
     return;
   }
+
 #ifdef MAP_VIEWPORT_EUALS_RENDERVIEWPORT
   display_set_area(render_viewport.x0, render_viewport.y0,
                    render_viewport.x0 + render_viewport.w,
                    render_viewport.y0 + render_viewport.h);
 #endif /* ifdef MAP_VIEWPORT_EUALS_RENDERVIEWPORT */
+
   uint8_t id;
   for (int y = 0; y < map->viewport_h; y++) {
     for (int x = 0; x < map->viewport_w; x++) {
@@ -185,7 +187,6 @@ void renderer_draw_map(const TileSet *tileset, Map *map) {
       renderer_blit(x * map->tile_size, y * map->tile_size,
                     tileset_get_tile(tileset, id), map->tile_size,
                     map->tile_size);
-
 #endif /* ifdef MAP_VIEWPORT_EUALS_RENDERVIEWPORT */
     }
   }
@@ -253,7 +254,7 @@ void render_list_remove_at(size_t index) {
 }
 
 void render_list_remove_sprite(const Sprite *sprite) {
-  // check from last one to avoid same sprites being overlooked
+  /* check from last one to avoid same sprites being overlooked. */
   for (size_t i = render_count; i > 0; --i) {
     if (render_list[i].type == RENDER_SPRITE &&
         render_list[i].sprite.sprite == sprite) {

@@ -28,17 +28,19 @@ void st7789_write_buffer(const uint16_t *data, size_t len) {
 
 void st7789_set_area(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1) {
   uint8_t data[] = {x0 >> 8, x0 & 0xFF, x1 >> 8, x1 & 0xFF};
-  st7789_write_cmd(0x2A); // Column addr set (CASET)
+  /* Column addr set (CASET). */
+  st7789_write_cmd(0x2A);
   st7789_write_data(data, 4);
 
   data[0] = y0 >> 8;
   data[1] = y0 & 0xFF;
   data[2] = y1 >> 8;
   data[3] = y1 & 0xFF;
-  st7789_write_cmd(0x2B); // Row addr set (RASET)
+  /* Row addr set (RASET). */
+  st7789_write_cmd(0x2B);
   st7789_write_data(data, 4);
-
-  st7789_write_cmd(0x2C); // Write to RAM
+  /* Write to RAM. */
+  st7789_write_cmd(0x2C);
 }
 
 void st7789_clear(uint16_t color) {
@@ -77,18 +79,24 @@ void st7789_init(void) {
 
   cs_deselect();
 
-  // Initialization sequence
-  st7789_write_cmd(0x01); // Software reset
+  /* Initialization sequence. */
+  /* Software reset. */
+  st7789_write_cmd(0x01);
   sleep_ms(150);
-  st7789_write_cmd(0x11); // Sleep out
+  /* Sleep out. */
+  st7789_write_cmd(0x11);
   sleep_ms(150);
   st7789_write_cmd(0x3A);
   uint8_t colmod = 0x55;
-  st7789_write_data(&colmod, 1); // 16-bit color
+  /* 16-bit color. */
+  st7789_write_data(&colmod, 1);
   st7789_write_cmd(0x36);
-  // 0x70 for Wavesahre 1.3 inch Display.
+  /* 0x70 for Wavesahre 1.3 inch Display. */
   uint8_t madctl = 0x00;
-  st7789_write_data(&madctl, 1); // Memory access control
-  //  st7789_write_cmd(0x21);        // Inversion ON
-  st7789_write_cmd(0x29); // Display on
+  /* Memory access control. */
+  st7789_write_data(&madctl, 1);
+  /* Inversion ON. */
+  //  st7789_write_cmd(0x21);
+  /* Display on. */
+  st7789_write_cmd(0x29);
 }

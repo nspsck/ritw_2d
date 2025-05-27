@@ -1,7 +1,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-/* config.h has to be imported earlier than driver_select.h */
+/* config.h has to be imported earlier than driver_select.h. */
 #include "src/config.h"
 #include <driver_select.h>
 #include <sprite.h>
@@ -11,8 +11,8 @@
 #include <tilemap.h>
 
 /**
- * any value in style 0x00** performs the same, as soon as you change the higher
- * bits, you lose ~1.8% performance on drawing pixels
+ * Any value in style 0x00** performs the same, as soon as you change the higher
+ * bits, you lose ~1.8% performance on drawing pixels.
  */
 #define SPRITE_MASK 0x00ff
 
@@ -77,7 +77,7 @@ void renderer_init(void);
 
 /**
  * Set the viewport to render. After setting the viewport, you may assume the
- * drawing will have the relative offset to the viewport
+ * drawing will have the relative offset to the viewport.
  */
 void renderer_set_viewport(uint16_t x, uint16_t y, uint16_t w, uint16_t h);
 
